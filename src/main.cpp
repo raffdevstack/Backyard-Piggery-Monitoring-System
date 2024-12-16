@@ -12,7 +12,6 @@ const char* ssid = "Hotspot_ko";
 const char* pass = "abcdefghij";
 bool wifi_connected = false;
 unsigned long previousMillis = 0; // Stores the last time an action occurred
-const long wifi_con_interval = 5000;
 
 BlynkTimer timer;
 
@@ -27,16 +26,18 @@ void myTimerEvent()
 }
 
 void connectToWifi() {
+
     if (WiFi.status() != WL_CONNECTED) {
         WiFi.begin(ssid, pass);
-        Serial.print("connecting ");
+        Serial.println("connecting ");
         wifi_connected = false;
+    } else {
+        Serial.println();
+        Serial.println("Connected to WiFi!");
+        Serial.print("IP Address: ");
+        Serial.println(WiFi.localIP());
+        wifi_connected = true;
     }
-    Serial.println();
-    Serial.println("Connected to WiFi!");
-    Serial.print("IP Address: ");
-    Serial.println(WiFi.localIP());
-    wifi_connected = true;
 }
 
 void setup()
@@ -46,10 +47,7 @@ void setup()
 
     connectToWifi();
 
-    if (wifi_connected)
-    {
-        timer.setInterval(1000L, myTimerEvent);
-    }
+    timer.setInterval(1000L, myTimerEvent);
     
 }
 
@@ -59,18 +57,24 @@ void loop()
     timer.run();
 
     unsigned long currentMillis = millis();
-  // Check if the interval has passed
-    if (currentMillis - previousMillis >= wifi_con_interval) {
+
+    // for wifi connection only, every 5sec
+    if (currentMillis - previousMillis >= 5000) {
         previousMillis = currentMillis;
 
         connectToWifi();
     }
 
-    if (wifi_connected)
-    {
-        Serial.println("I  am connected, program me!");
-    } else {
-        Serial.println("I  am NOT connected, program me!");
+    // every 1 sec
+    if (currentMillis - previousMillis >= 1000) {
+        previousMillis = currentMillis;
+
+        if (wifi_connected == true)
+        {
+            Serial.println("I  am connected, program me!");
+        } else {
+            Serial.println("I  am NOT connected, program me!");
+        }
     }
-    
+
 }
