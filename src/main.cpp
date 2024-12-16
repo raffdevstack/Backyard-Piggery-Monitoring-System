@@ -10,6 +10,9 @@
 
 const char* ssid = "Hotspot_ko";
 const char* pass = "abcdefghij";
+// const char* ssid = "LUNA BOARDING HOUSE PISO WIFI";
+// const char* pass = "";
+
 bool wifi_connected = false;
 unsigned long previousMillis = 0; // Stores the last time an action occurred
 
@@ -18,11 +21,6 @@ BlynkTimer timer;
 BLYNK_CONNECTED()
 {
     Serial.println("CONNECTED TO BLYNK");
-}
-
-void myTimerEvent()
-{
-    Serial.println("blynk timer works");
 }
 
 void connectToWifi() {
@@ -47,8 +45,7 @@ void setup()
 
     connectToWifi();
 
-    timer.setInterval(1000L, myTimerEvent);
-    
+    //  timer.setInterval(1000L, myTimerEvent);
 }
 
 void loop()
@@ -63,18 +60,6 @@ void loop()
         previousMillis = currentMillis;
 
         connectToWifi();
-    }
-
-    // every 1 sec
-    if (currentMillis - previousMillis >= 1000) {
-        previousMillis = currentMillis;
-
-        if (wifi_connected == true)
-        {
-            Serial.println("I  am connected, program me!");
-        } else {
-            Serial.println("I  am NOT connected, program me!");
-        }
     }
 
 }
