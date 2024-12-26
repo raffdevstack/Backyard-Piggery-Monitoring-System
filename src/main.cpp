@@ -27,10 +27,15 @@ BLYNK_CONNECTED()
 
 void connectToWifi() {
 
-    if (WiFi.status() != WL_CONNECTED) {
+    if (WiFi.status() != WL_CONNECTED) { // if not connected to wifi
         Serial.print("connecting ");
+        // wifi status on lcd
         lcd.setCursor(5,1);
         lcd.print("0");
+        // blynk status on lcd
+        lcd.setCursor(14,1);
+        lcd.print("0");
+        
         wifi_connected = false;
         WiFi.begin(ssid, pass);
     } else {
@@ -39,6 +44,16 @@ void connectToWifi() {
         lcd.setCursor(5,1);
         lcd.print("1");
         wifi_connected = true;
+        if (!Blynk.connected()) {
+            Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass); 
+            Serial.print("connecting to blynk");
+            lcd.setCursor(14,1);
+            lcd.print("0");
+        } else {
+            Serial.println("Connected to Blynk!");
+            lcd.setCursor(14,1);
+            lcd.print("1");
+        }
     }
 }
 
@@ -53,11 +68,11 @@ void setup()
 
 // first row
     lcd.setCursor(0,0);
-    lcd.print("T:");
+    lcd.print("T:00");
     lcd.setCursor(4,0);
     lcd.print("C");
     lcd.setCursor(6,0);
-    lcd.print("H:");
+    lcd.print("H:00");
     lcd.setCursor(10,0);
     lcd.print("%");
     lcd.setCursor(12,0);
@@ -65,9 +80,9 @@ void setup()
 
 //  second row
     lcd.setCursor(0,1);
-    lcd.print("WiFi:");
+    lcd.print("WiFi:0");
     lcd.setCursor(8,1);
-    lcd.print("BLYNK:");
+    lcd.print("BLYNK:0");
 
     connectToWifi();
 
