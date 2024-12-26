@@ -1,7 +1,7 @@
 
-#define BLYNK_TEMPLATE_ID "TMPL6lDFeOAuC"
+#define BLYNK_TEMPLATE_ID "TMPL6oTAALs3i"
 #define BLYNK_TEMPLATE_NAME "Backyard Piggery"
-#define BLYNK_AUTH_TOKEN "a4MdgoRqs5ljj7yhqHRd9aOUdIyKAk6j"
+#define BLYNK_AUTH_TOKEN "9m5XLGdZ6dQTm8fXzHY88WwK9jQ1NfwC"
 
 #define BLYNK_PRINT Serial
 
@@ -26,14 +26,12 @@ BLYNK_CONNECTED()
 void connectToWifi() {
 
     if (WiFi.status() != WL_CONNECTED) {
-        WiFi.begin(ssid, pass);
-        Serial.println("connecting ");
+        Serial.print("connecting ");
         wifi_connected = false;
+        WiFi.begin(ssid, pass);
     } else {
         Serial.println();
         Serial.println("Connected to WiFi!");
-        Serial.print("IP Address: ");
-        Serial.println(WiFi.localIP());
         wifi_connected = true;
     }
 }
