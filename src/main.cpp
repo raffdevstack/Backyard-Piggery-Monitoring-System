@@ -66,39 +66,48 @@ void connectToWifiBlynk() {
 
     if (WiFi.status() != WL_CONNECTED && wifi_connected) { // if not connected to wifi
 
-        lcd.home();
-        lcd.print("WiFi DISCONNECTED!");
+        if (wifi_connected){
+            lcd.clear();
+            lcd.home();
+            lcd.print("WiFi DISCONNECTED!");
+        }
+
         wifi_connected = false;
-        blynk_connected = false;
-        
+
         WiFi.begin(ssid, pass);
 
         Serial.print("connecting ");
 
     } else if (WiFi.status() == WL_CONNECTED && !wifi_connected) {
 
-        lcd.home();
-        lcd.print("WiFi CONNECTED");
+        if (!wifi_connected) {
+            lcd.clear();
+            lcd.home();
+            lcd.print("WiFi CONNECTED");
+        }
+        
         wifi_connected = true;
 
-        Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass); 
-        
         // blynk connection
         if (!Blynk.connected() && blynk_connected) {
 
-            lcd.home();
-            lcd.print("Blynk DISCONNECTED");
-            blynk_connected = false;
-            
+            if (blynk_connected) {
+                lcd.clear();
+                lcd.home();
+                lcd.print("Blynk DISCONNECTED");
+            }
+
             // try to connect again
             Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass); 
         
         } else if (Blynk.connected() && !blynk_connected) {
             
-            lcd.home();
-            lcd.print("Blynk CONNECTED");
-            blynk_connected = true;
-    
+            if (!blynk_connected){
+                lcd.clear();
+                lcd.home();
+                lcd.print("Blynk CONNECTED");
+            }
+            
         }
     }
 }
