@@ -33,6 +33,8 @@ BLYNK_CONNECTED()
 
 void runDhtSensor() {
 
+    yield();
+
     int result = dht.readTemperatureHumidity(temperature, humidity);
 
     lcd.clear();
@@ -64,52 +66,55 @@ void runDhtSensor() {
 
 void connectToWifiBlynk() {
 
-    if (WiFi.status() != WL_CONNECTED && wifi_connected) { // if not connected to wifi
+    yield();
+
+    if (WiFi.status() != WL_CONNECTED) { // if not connected to wifi
 
         if (wifi_connected){
             lcd.clear();
             lcd.home();
             lcd.print("WiFi DISCONNECTED!");
+            wifi_connected = false;
+            blynk_connected = false;
         }
 
-        wifi_connected = false;
-
+        // try to reconnect
         WiFi.begin(ssid, pass);
-
         Serial.print("connecting ");
 
-    } else if (WiFi.status() == WL_CONNECTED && !wifi_connected) {
+        return; // wait for the next iteration
+    } 
 
-        if (!wifi_connected) {
-            lcd.clear();
-            lcd.home();
-            lcd.print("WiFi CONNECTED");
-        }
-        
+
+    if (!wifi_connected) {
+        lcd.clear();
+        lcd.home();
+        lcd.print("WiFi CONNECTED");
         wifi_connected = true;
-
-        // blynk connection
-        if (!Blynk.connected() && blynk_connected) {
-
-            if (blynk_connected) {
-                lcd.clear();
-                lcd.home();
-                lcd.print("Blynk DISCONNECTED");
-            }
-
-            // try to connect again
-            Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass); 
-        
-        } else if (Blynk.connected() && !blynk_connected) {
-            
-            if (!blynk_connected){
-                lcd.clear();
-                lcd.home();
-                lcd.print("Blynk CONNECTED");
-            }
-            
-        }
     }
+    
+    // // blynk connection
+    // if (!Blynk.connected()) {
+
+    //     if (blynk_connected) {
+    //         lcd.clear();
+    //         lcd.home();
+    //         lcd.print("Blynk DISCONNECTED");
+    //     }
+
+    //     // try to connect again
+    //     Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass); 
+    
+    // } else if (Blynk.connected()) {
+        
+    //     if (!blynk_connected){
+    //         lcd.clear();
+    //         lcd.home();
+    //         lcd.print("Blynk CONNECTED");
+    //     }
+        
+    // }
+    
 }
     
 
@@ -139,4 +144,5 @@ void loop()
 {
     Blynk.run();
     timer.run();
+    yield();
 }
