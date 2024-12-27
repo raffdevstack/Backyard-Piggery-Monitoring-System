@@ -37,7 +37,8 @@ void runDhtSensor() {
 
     int result = dht.readTemperatureHumidity(temperature, humidity);
 
-    lcd.clear();
+    lcd.setCursor(0,1);
+    lcd.print("                "); // clear
 
     lcd.setCursor(0,1);
     lcd.print("T: __");
@@ -71,6 +72,7 @@ void connectToWifiBlynk() {
     if (WiFi.status() != WL_CONNECTED) { // if not connected to wifi
 
         if (wifi_connected){
+            // nofication
             lcd.clear();
             lcd.home();
             lcd.print("WiFi DISCONNECTED!");
@@ -92,6 +94,19 @@ void connectToWifiBlynk() {
         wifi_connected = true;
     }
     
+}
+
+void topBar() {
+
+    lcd.home();
+    lcd.print("                "); // clear
+    lcd.setCursor(9,0);
+    if(wifi_connected == false) {
+        lcd.print("W:0");
+    } else {
+        lcd.print("W:1");
+    }
+
 }
     
 
@@ -115,6 +130,7 @@ void setup() {
 
     timer.setInterval(5000L, connectToWifiBlynk);
     timer.setInterval(2000L, runDhtSensor);
+    timer.setInterval(2000L, topBar);
 }
 
 void loop()
