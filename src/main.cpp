@@ -33,8 +33,6 @@ BLYNK_CONNECTED()
 
 void runDhtSensor() {
 
-    yield();
-
     int result = dht.readTemperatureHumidity(temperature, humidity);
 
     lcd.setCursor(0,1);
@@ -66,8 +64,6 @@ void runDhtSensor() {
 }
 
 void connectToWifiBlynk() {
-
-    yield();
 
     if (WiFi.status() != WL_CONNECTED) { // if not connected to wifi
 
@@ -139,5 +135,4 @@ void loop()
         Blynk.run();
     }
     timer.run();
-    yield();
 }
