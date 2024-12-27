@@ -67,9 +67,8 @@ void connectToWifiBlynk() {
             lcd.clear();
             lcd.home();
             lcd.print("WiFi DISCONNECTED!");
+            wifi_connected = false;
         }
-
-        wifi_connected = false;
 
         WiFi.begin(ssid, pass);
 
@@ -81,10 +80,9 @@ void connectToWifiBlynk() {
             lcd.clear();
             lcd.home();
             lcd.print("WiFi CONNECTED");
+            wifi_connected = true;
         }
         
-        wifi_connected = true;
-
         // blynk connection
         if (!Blynk.connected()) {
 
@@ -92,6 +90,7 @@ void connectToWifiBlynk() {
                 lcd.clear();
                 lcd.home();
                 lcd.print("Blynk DISCONNECTED");
+                blynk_connected = false;
             }
 
             // try to connect again
@@ -103,8 +102,9 @@ void connectToWifiBlynk() {
                 lcd.clear();
                 lcd.home();
                 lcd.print("Blynk CONNECTED");
+                blynk_connected = true;
             }
-            
+
         }
         
     }
@@ -139,6 +139,5 @@ void loop()
 {
     Blynk.run();
     timer.run();
-    yield(); // Keep the watchdog happy if you have long tasks
 
 }
