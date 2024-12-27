@@ -17,6 +17,7 @@ const char* pass = "abcdefghij";
 // const char* pass = "";
 
 bool wifi_connected = false;
+bool blynk_connected = false;
 unsigned long previousMillis = 0; // Stores the last time an action occurred
 int temperature = 0;
 int humidity = 0;
@@ -50,40 +51,63 @@ void dhtSensor() {
     } 
 }
 
-void connectToWifi() {
+void connectToWifiBlynk() {
 
     if (WiFi.status() != WL_CONNECTED) { // if not connected to wifi
+
         Serial.print("connecting ");
-        // wifi status on lcd
-        lcd.setCursor(5,1);
-        lcd.print("0");
-        // blynk status on lcd
-        lcd.setCursor(14,1);
-        lcd.print("0");
+
+        if (wifi_connected){
+            lcd.clear();
+            lcd.home();
+            lcd.print("WiFi DISCONNECTED!");
+        }
 
         wifi_connected = false;
+
         WiFi.begin(ssid, pass);
+
     } else {
+
         Serial.println();
         Serial.println("Connected to WiFi!");
-        lcd.setCursor(5,1);
-        lcd.print("1");
+
+        if (!wifi_connected){
+            lcd.clear();
+            lcd.home();
+            lcd.print("WiFi CONNECTED");
+        }
+        
         wifi_connected = true;
+
+// blynk connection
         if (!Blynk.connected()) {
+
             Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass); 
+
             Serial.print("connecting to blynk");
-            lcd.setCursor(14,1);
-            lcd.print("0");
+
+            if (blynk_connected){
+            lcd.clear();
+            lcd.home();
+            lcd.print("Blynk DISCONNECTED");
+        
         } else {
             Serial.println("Connected to Blynk!");
-            lcd.setCursor(14,1);
-            lcd.print("1");
+            
+            if (!blynk_connected){
+            lcd.clear();
+            lcd.home();
+            lcd.print("Blynk CONNECTED");
         }
+        
+
+    }
+}
     }
 }
 
-void setup()
-{
+void setup() {
     Serial.begin(115200);
     delay(10);
 
@@ -91,25 +115,13 @@ void setup()
     lcd.clear();
     lcd.backlight();
 
-// first row
-    lcd.setCursor(0,0);
-    lcd.print("T:00");
-    lcd.setCursor(4,0);
-    lcd.print("C");
-    lcd.setCursor(6,0);
-    lcd.print("H:00");
-    lcd.setCursor(10,0);
-    lcd.print("%");
-    lcd.setCursor(12,0);
-    lcd.print("L:");
+    lcd.setCursor(1,0);
+    lcd.print("Welcome!");
 
-//  second row
     lcd.setCursor(0,1);
-    lcd.print("WiFi:0");
-    lcd.setCursor(8,1);
-    lcd.print("BLYNK:0");
+    lcd.print("PIGGERY MONITOR");
 
-    connectToWifi();
+    connectToWifiBlynk();
 
     //  timer.setInterval(1000L, myTimerEvent);
 }
@@ -125,7 +137,7 @@ void loop()
     if (currentMillis - previousMillis >= 5000) {
         previousMillis = currentMillis;
 
-        connectToWifi();
+        connectToWifiBlynk();
     }
 
 }
