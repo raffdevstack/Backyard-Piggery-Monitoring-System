@@ -79,12 +79,11 @@ void connectToWifiBlynk() {
         }
 
         // try to reconnect
-        WiFi.begin(ssid, pass);
-        Serial.print("connecting ");
+        WiFi.reconnect();
+        Serial.print("reconnecting ");
 
         return; // wait for the next iteration
     } 
-
 
     if (!wifi_connected) {
         lcd.clear();
@@ -92,28 +91,6 @@ void connectToWifiBlynk() {
         lcd.print("WiFi CONNECTED");
         wifi_connected = true;
     }
-    
-    // // blynk connection
-    // if (!Blynk.connected()) {
-
-    //     if (blynk_connected) {
-    //         lcd.clear();
-    //         lcd.home();
-    //         lcd.print("Blynk DISCONNECTED");
-    //     }
-
-    //     // try to connect again
-    //     Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass); 
-    
-    // } else if (Blynk.connected()) {
-        
-    //     if (!blynk_connected){
-    //         lcd.clear();
-    //         lcd.home();
-    //         lcd.print("Blynk CONNECTED");
-    //     }
-        
-    // }
     
 }
     
@@ -142,7 +119,9 @@ void setup() {
 
 void loop()
 {
-    Blynk.run();
+    if (Blynk.connected()) {
+        Blynk.run();
+    }
     timer.run();
     yield();
 }
