@@ -91,18 +91,51 @@ void connectToWifiBlynk() {
     }
 
     // code for connected wifi
-    
+
+    if (!Blynk.connected())
+    {
+        if (blynk_connected) {
+            Serial.println("Blynk connection Lost, reconnecting.");
+            blynk_connected = false;
+        }
+        
+        if (Blynk.connect()) {
+            Serial.println("Connected to Blynk!");
+            blynk_connected = true;
+        } else {
+            Serial.println("Failed to connect to Blynk");
+            blynk_connected = false;
+        }
+        
+        return;
+
+    }
+
+    if (!blynk_connected){
+        Serial.println("Blynk is online again!");
+        blynk_connected = true;
+        return;
+    }
+        
 }
 
 void topBar() {
 
     lcd.home();
     lcd.print("                "); // clear
+    // for wifi
     lcd.setCursor(9,0);
     if(wifi_connected == false) {
         lcd.print("W:0");
     } else {
         lcd.print("W:1");
+    }
+    // for blynk
+    lcd.setCursor(13,0);
+    if(blynk_connected == false) {
+        lcd.print("B:0");
+    } else {
+        lcd.print("B:1");
     }
 
 }
@@ -125,6 +158,9 @@ void setup() {
      // Set the ESP8266 to STA mode
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, pass);
+
+    // blynk init
+    Blynk.config(BLYNK_AUTH_TOKEN);
 
     timer.setInterval(5000L, connectToWifiBlynk);
     timer.setInterval(5000L, runDhtSensor);
