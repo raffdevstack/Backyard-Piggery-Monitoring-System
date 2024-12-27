@@ -89,6 +89,8 @@ void connectToWifiBlynk() {
         lcd.print("WiFi CONNECTED");
         wifi_connected = true;
     }
+
+    // code for connected wifi
     
 }
 
@@ -125,8 +127,8 @@ void setup() {
     WiFi.begin(ssid, pass);
 
     timer.setInterval(5000L, connectToWifiBlynk);
-    timer.setInterval(2000L, runDhtSensor);
-    timer.setInterval(2000L, topBar);
+    timer.setInterval(5000L, runDhtSensor);
+    timer.setInterval(5000L, topBar);
 }
 
 void loop()
