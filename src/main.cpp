@@ -37,80 +37,72 @@ void runDhtSensor() {
 
     lcd.clear();
 
-    lcd.home();
+    lcd.setCursor(0,1);
     lcd.print("T: __");
-    lcd.setCursor(5,0);
+    lcd.setCursor(5,1);
     lcd.print("C");
 
-    lcd.setCursor(9,0);
+    lcd.setCursor(9,1);
     lcd.print("H: __");
-    lcd.setCursor(14,0);
+    lcd.setCursor(14,1);
     lcd.print("%");
 
     if (result == 0) {
 
-        lcd.setCursor(3,0);
+        lcd.setCursor(3,1);
         lcd.print(temperature);
 
-        lcd.setCursor(12,0);
+        lcd.setCursor(12,1);
         lcd.print(humidity);
-    } else {
 
+    } else {
+        lcd.clear();
+        lcd.setCursor(0,1);
+        lcd.print("sensor error");
     }
 }
 
 void connectToWifiBlynk() {
 
-    if (WiFi.status() != WL_CONNECTED) { // if not connected to wifi
+    if (WiFi.status() != WL_CONNECTED && wifi_connected) { // if not connected to wifi
 
-        if (wifi_connected){
-            lcd.clear();
-            lcd.home();
-            lcd.print("WiFi DISCONNECTED!");
-            wifi_connected = false;
-        }
-
+        lcd.home();
+        lcd.print("WiFi DISCONNECTED!");
+        wifi_connected = false;
+        blynk_connected = false;
+        
         WiFi.begin(ssid, pass);
 
         Serial.print("connecting ");
 
-    } else {
+    } else if (WiFi.status() == WL_CONNECTED && !wifi_connected) {
 
-        if (!wifi_connected) {
-            lcd.clear();
-            lcd.home();
-            lcd.print("WiFi CONNECTED");
-            wifi_connected = true;
-        }
+        lcd.home();
+        lcd.print("WiFi CONNECTED");
+        wifi_connected = true;
+
+        Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass); 
         
         // blynk connection
-        if (!Blynk.connected()) {
+        if (!Blynk.connected() && blynk_connected) {
 
-            if (blynk_connected) {
-                lcd.clear();
-                lcd.home();
-                lcd.print("Blynk DISCONNECTED");
-                blynk_connected = false;
-            }
-
+            lcd.home();
+            lcd.print("Blynk DISCONNECTED");
+            blynk_connected = false;
+            
             // try to connect again
             Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass); 
         
-        } else {
+        } else if (Blynk.connected() && !blynk_connected) {
             
-            if (!blynk_connected){
-                lcd.clear();
-                lcd.home();
-                lcd.print("Blynk CONNECTED");
-                blynk_connected = true;
-            }
-
+            lcd.home();
+            lcd.print("Blynk CONNECTED");
+            blynk_connected = true;
+    
         }
-        
     }
 }
     
-
 
 void setup() {
     Serial.begin(115200);
@@ -128,8 +120,7 @@ void setup() {
 
      // Set the ESP8266 to STA mode
     WiFi.mode(WIFI_STA);
-
-    connectToWifiBlynk();
+    WiFi.begin(ssid, pass);
 
     timer.setInterval(5000L, connectToWifiBlynk);
     timer.setInterval(2000L, runDhtSensor);
@@ -139,5 +130,4 @@ void loop()
 {
     Blynk.run();
     timer.run();
-
 }
