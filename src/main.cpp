@@ -24,38 +24,44 @@ int humidity = 0;
 
 BlynkTimer timer;
 LiquidCrystal_I2C lcd(0x27, 16, 2);
-DHT11 dht(2); // d4
+DHT11 dht(D6); // d4
 
 BLYNK_CONNECTED()
 {
-    Serial.println("CONNECTED TO BLYNK");
+    //
 }
 
-void dhtSensor() {
-
-    Serial.println("hello from sensor");
+void runDhtSensor() {
 
     int result = dht.readTemperatureHumidity(temperature, humidity);
 
-    if (result == 0) {
-        Blynk.virtualWrite(V0, temperature);
-        Blynk.virtualWrite(V1, humidity);
-        Serial.println(temperature);
-        Serial.println(humidity);
+    lcd.clear();
 
-        lcd.setCursor(6,0);
+    lcd.home();
+    lcd.print("T: __");
+    lcd.setCursor(5,0);
+    lcd.print("C");
+
+    lcd.setCursor(9,0);
+    lcd.print("H: __");
+    lcd.setCursor(14,0);
+    lcd.print("%");
+
+    if (result == 0) {
+
+        lcd.setCursor(3,0);
         lcd.print(temperature);
 
-        lcd.setCursor(14,0);
+        lcd.setCursor(12,0);
         lcd.print(humidity);
-    } 
+    } else {
+
+    }
 }
 
 void connectToWifiBlynk() {
 
     if (WiFi.status() != WL_CONNECTED) { // if not connected to wifi
-
-        Serial.print("connecting ");
 
         if (wifi_connected){
             lcd.clear();
@@ -67,12 +73,11 @@ void connectToWifiBlynk() {
 
         WiFi.begin(ssid, pass);
 
+        Serial.print("connecting ");
+
     } else {
 
-        Serial.println();
-        Serial.println("Connected to WiFi!");
-
-        if (!wifi_connected){
+        if (!wifi_connected) {
             lcd.clear();
             lcd.home();
             lcd.print("WiFi CONNECTED");
@@ -80,32 +85,32 @@ void connectToWifiBlynk() {
         
         wifi_connected = true;
 
-// blynk connection
+        // blynk connection
         if (!Blynk.connected()) {
 
+            if (blynk_connected) {
+                lcd.clear();
+                lcd.home();
+                lcd.print("Blynk DISCONNECTED");
+            }
+
+            // try to connect again
             Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass); 
-
-            Serial.print("connecting to blynk");
-
-            if (blynk_connected){
-            lcd.clear();
-            lcd.home();
-            lcd.print("Blynk DISCONNECTED");
         
         } else {
-            Serial.println("Connected to Blynk!");
             
             if (!blynk_connected){
-            lcd.clear();
-            lcd.home();
-            lcd.print("Blynk CONNECTED");
+                lcd.clear();
+                lcd.home();
+                lcd.print("Blynk CONNECTED");
+            }
+            
         }
         
+    }
+}
+    
 
-    }
-}
-    }
-}
 
 void setup() {
     Serial.begin(115200);
@@ -121,23 +126,19 @@ void setup() {
     lcd.setCursor(0,1);
     lcd.print("PIGGERY MONITOR");
 
+     // Set the ESP8266 to STA mode
+    WiFi.mode(WIFI_STA);
+
     connectToWifiBlynk();
 
-    //  timer.setInterval(1000L, myTimerEvent);
+    timer.setInterval(5000L, connectToWifiBlynk);
+    timer.setInterval(2000L, runDhtSensor);
 }
 
 void loop()
 {
     Blynk.run();
     timer.run();
-
-    unsigned long currentMillis = millis();
-
-    // for wifi connection only, every 5sec
-    if (currentMillis - previousMillis >= 5000) {
-        previousMillis = currentMillis;
-
-        connectToWifiBlynk();
-    }
+    yield(); // Keep the watchdog happy if you have long tasks
 
 }
