@@ -7,6 +7,7 @@
 
 #include <Arduino.h>
 #include <DHT11.h>
+#include <MQ135.h>
 #include <ESP8266WiFi.h>
 #include <BlynkSimpleEsp8266.h>
 #include <LiquidCrystal_I2C.h>
@@ -25,13 +26,11 @@ int humidity = 0;
 BlynkTimer timer;
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 DHT11 dht(D6); // d4
+MQ135 mq135_sensor(A0);
 
-BLYNK_CONNECTED()
-{
-    //
-}
 
-void runDhtSensor() {
+
+void readDisplaySensorData() {
 
     int result = dht.readTemperatureHumidity(temperature, humidity);
 
@@ -59,8 +58,27 @@ void runDhtSensor() {
     } else {
         lcd.clear();
         lcd.setCursor(0,1);
-        lcd.print("sensor error");
+        lcd.print("dht11 sensor error");
     }
+    
+    // mq135 sensor
+
+    float rzero = mq135_sensor.getRZero();
+    float correctedRZero = mq135_sensor.getCorrectedRZero(temperature, humidity);
+    float resistance = mq135_sensor.getResistance();
+    float ppm = mq135_sensor.getPPM();
+    float correctedPPM = mq135_sensor.getCorrectedPPM(temperature, humidity);
+    Serial.print("MQ135 RZero: ");
+    Serial.print(rzero);
+    Serial.print("\t Corrected RZero: ");
+    Serial.print(correctedRZero);
+    Serial.print("\t Resistance: ");
+    Serial.print(resistance);
+    Serial.print("\t PPM: ");
+    Serial.print(ppm);
+    Serial.print("\t Corrected PPM: ");
+    Serial.print(correctedPPM);
+    Serial.println("ppm");
 }
 
 void connectToWifiBlynk() {
@@ -164,7 +182,7 @@ void setup() {
     Blynk.config(BLYNK_AUTH_TOKEN);
 
     timer.setInterval(5000L, connectToWifiBlynk);
-    timer.setInterval(5000L, runDhtSensor);
+    timer.setInterval(5000L, readDisplaySensorData);
     timer.setInterval(5000L, topBar);
 }
 
