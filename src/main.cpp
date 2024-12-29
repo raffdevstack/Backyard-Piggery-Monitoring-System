@@ -51,9 +51,11 @@ void readDisplaySensorData() {
 
         lcd.setCursor(2,1);
         lcd.print(temperature);
+        Blynk.virtualWrite(V0, temperature);
 
         lcd.setCursor(8,1);
         lcd.print(humidity);
+        Blynk.virtualWrite(V1, humidity);
 
     } else {
         lcd.clear();
@@ -69,13 +71,14 @@ void readDisplaySensorData() {
     // float ppm = mq135_sensor.getPPM();
     float correctedPPM = mq135_sensor.getCorrectedPPM(temperature, humidity);
     
-    int odor_level = map( round(correctedPPM), 5, 1000, 0, 10);
+    int odor_level = map( round(correctedPPM), 5, 500, 0, 10);
 
     lcd.setCursor(12,1);
     lcd.print("O:");
     if (correctedPPM){
         lcd.setCursor(14,1);
         lcd.print(odor_level);
+        Blynk.sendInternal("A0", correctedPPM);
     }
     
 }
