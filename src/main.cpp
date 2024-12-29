@@ -39,12 +39,12 @@ void readDisplaySensorData() {
 
     lcd.setCursor(0,1);
     lcd.print("T: __");
-    lcd.setCursor(5,1);
+    lcd.setCursor(4,1);
     lcd.print("C");
 
-    lcd.setCursor(9,1);
+    lcd.setCursor(6,1);
     lcd.print("H: __");
-    lcd.setCursor(14,1);
+    lcd.setCursor(10,1);
     lcd.print("%");
 
     if (result == 0) {
@@ -63,22 +63,21 @@ void readDisplaySensorData() {
     
     // mq135 sensor
 
-    float rzero = mq135_sensor.getRZero();
-    float correctedRZero = mq135_sensor.getCorrectedRZero(temperature, humidity);
-    float resistance = mq135_sensor.getResistance();
-    float ppm = mq135_sensor.getPPM();
+    // float rzero = mq135_sensor.getRZero();
+    // float correctedRZero = mq135_sensor.getCorrectedRZero(temperature, humidity);
+    // float resistance = mq135_sensor.getResistance();
+    // float ppm = mq135_sensor.getPPM();
     float correctedPPM = mq135_sensor.getCorrectedPPM(temperature, humidity);
-    Serial.print("MQ135 RZero: ");
-    Serial.print(rzero);
-    Serial.print("\t Corrected RZero: ");
-    Serial.print(correctedRZero);
-    Serial.print("\t Resistance: ");
-    Serial.print(resistance);
-    Serial.print("\t PPM: ");
-    Serial.print(ppm);
-    Serial.print("\t Corrected PPM: ");
-    Serial.print(correctedPPM);
-    Serial.println("ppm");
+    
+    float odor_level = map(correctedPPM, 0, 1500, 0, 10);
+
+    lcd.setCursor(12,1);
+    lcd.print("O: __");
+    if (correctedPPM){
+        lcd.setCursor(14,1);
+        lcd.print(odor_level);
+    }
+    
 }
 
 void connectToWifiBlynk() {
