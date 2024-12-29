@@ -76,6 +76,43 @@ void readDisplaySensorData() {
     
 }
 
+int calculateHeatIndexCelsius(int tempC, int humidity) {
+    // First convert Celsius to Fahrenheit for the calculation
+    int tempF = (tempC * 9/5) + 32;
+    
+    // Constants for the Rothfusz regression
+    const float c1 = -42.379;
+    const float c2 = 2.04901523;
+    const float c3 = 10.14333127;
+    const float c4 = -0.22475541;
+    const float c5 = -0.00683783;
+    const float c6 = -0.05481717;
+    const float c7 = 0.00122874;
+    const float c8 = 0.00085282;
+    const float c9 = -0.00000199;
+
+    // Check if temperature is above the minimum threshold (27°C = ~80°F)
+    if (tempC < 27) {
+        return tempC; // Below threshold, return actual temperature
+    }
+
+    // Calculate heat index in Fahrenheit
+    float heatIndexF = c1 + 
+                      (c2 * tempF) + 
+                      (c3 * humidity) + 
+                      (c4 * tempF * tempF) + 
+                      (c5 * humidity * humidity) + 
+                      (c6 * tempF * humidity) + 
+                      (c7 * tempF * tempF * humidity) + 
+                      (c8 * tempF * humidity * humidity) + 
+                      (c9 * tempF * tempF * humidity * humidity);
+
+    // Convert heat index back to Celsius and round to nearest integer
+    int heatIndexC = round((heatIndexF - 32.0) * 5.0/9.0);
+    
+    return heatIndexC;
+}
+
 void connectToWifiBlynk() {
 
     if (WiFi.status() != WL_CONNECTED) { // if not connected to wifi
