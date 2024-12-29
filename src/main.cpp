@@ -32,6 +32,32 @@ void lcdPrinter(int cursor, int row, String text) {
     lcd.print(text);
 }
 
+float calculateHeatIndexCelsius(float tempC, float humidity) {
+    if (tempC < 27) {
+        return tempC; // Below 27°C, no heat index adjustment is needed
+    }
+
+    float tempF = (tempC * 9.0/5.0) + 32.0;
+
+    // Adjust the heat index formula for reasonable inputs
+    float heatIndexF = -42.379 + 
+                      2.04901523 * tempF + 
+                      10.14333127 * humidity - 
+                      0.22475541 * tempF * humidity - 
+                      0.00683783 * humidity * humidity - 
+                      0.05481717 * tempF * humidity + 
+                      0.00122874 * tempF * tempF + 
+                      0.00085282 * humidity * humidity + 
+                      -0.00000199 * tempF * tempF * humidity * humidity;
+
+    // Convert the result from Fahrenheit back to Celsius
+    float heatIndexC = (heatIndexF - 32.0) * 5.0 / 9.0;
+
+    // Return the heat index in Celsius
+    return heatIndexC;
+}
+
+
 void readDisplaySensorData() {
 
     int result = dht.readTemperatureHumidity(temperature, humidity);
@@ -52,13 +78,16 @@ void readDisplaySensorData() {
         lcdPrinter(8,1,String(humidity));
         Blynk.virtualWrite(V1, humidity);
 
+        int heat_index =  calculateHeatIndexCelsius(temperature, humidity);
+        Serial.println(heat_index);
+        Blynk.virtualWrite(V2, heat_index);
+
     } else {
         lcd.clear();
         lcdPrinter(0,1,"dht11 sensor error");
     }
     
     // mq135 sensor
-
     // float rzero = mq135_sensor.getRZero();
     // float correctedRZero = mq135_sensor.getCorrectedRZero(temperature, humidity);
     // float resistance = mq135_sensor.getResistance();
@@ -74,43 +103,6 @@ void readDisplaySensorData() {
         Blynk.sendInternal("A0", correctedPPM);
     }
     
-}
-
-int calculateHeatIndexCelsius(int tempC, int humidity) {
-    // First convert Celsius to Fahrenheit for the calculation
-    int tempF = (tempC * 9/5) + 32;
-    
-    // Constants for the Rothfusz regression
-    const float c1 = -42.379;
-    const float c2 = 2.04901523;
-    const float c3 = 10.14333127;
-    const float c4 = -0.22475541;
-    const float c5 = -0.00683783;
-    const float c6 = -0.05481717;
-    const float c7 = 0.00122874;
-    const float c8 = 0.00085282;
-    const float c9 = -0.00000199;
-
-    // Check if temperature is above the minimum threshold (27°C = ~80°F)
-    if (tempC < 27) {
-        return tempC; // Below threshold, return actual temperature
-    }
-
-    // Calculate heat index in Fahrenheit
-    float heatIndexF = c1 + 
-                      (c2 * tempF) + 
-                      (c3 * humidity) + 
-                      (c4 * tempF * tempF) + 
-                      (c5 * humidity * humidity) + 
-                      (c6 * tempF * humidity) + 
-                      (c7 * tempF * tempF * humidity) + 
-                      (c8 * tempF * humidity * humidity) + 
-                      (c9 * tempF * tempF * humidity * humidity);
-
-    // Convert heat index back to Celsius and round to nearest integer
-    int heatIndexC = round((heatIndexF - 32.0) * 5.0/9.0);
-    
-    return heatIndexC;
 }
 
 void connectToWifiBlynk() {
