@@ -19,48 +19,42 @@ const char* pass = "abcdefghij";
 
 bool wifi_connected = false;
 bool blynk_connected = false;
-unsigned long previousMillis = 0; // Stores the last time an action occurred
 int temperature = 0;
 int humidity = 0;
 
 BlynkTimer timer;
 LiquidCrystal_I2C lcd(0x27, 16, 2);
-DHT11 dht(D6); // d4
+DHT11 dht(D6);
 MQ135 mq135_sensor(A0);
 
-
+void lcdPrinter(int cursor, int row, String text) {
+    lcd.setCursor(cursor, row); // Assuming you want to set the cursor to a specific column on row 0
+    lcd.print(text);
+}
 
 void readDisplaySensorData() {
 
     int result = dht.readTemperatureHumidity(temperature, humidity);
 
-    lcd.setCursor(0,1);
-    lcd.print("                "); // clear
+    lcdPrinter(0,1,"                ");
 
-    lcd.setCursor(0,1);
-    lcd.print("T:");
-    lcd.setCursor(4,1);
-    lcd.print("C");
+    lcdPrinter(0,1,"T:");
+    lcdPrinter(4,1,"C");
 
-    lcd.setCursor(6,1);
-    lcd.print("H:");
-    lcd.setCursor(10,1);
-    lcd.print("%");
+    lcdPrinter(6,1,"H:");
+    lcdPrinter(10,1,"%");
 
     if (result == 0) {
 
-        lcd.setCursor(2,1);
-        lcd.print(temperature);
+        lcdPrinter(2,1,String(temperature));
         Blynk.virtualWrite(V0, temperature);
 
-        lcd.setCursor(8,1);
-        lcd.print(humidity);
+        lcdPrinter(8,1,String(humidity));
         Blynk.virtualWrite(V1, humidity);
 
     } else {
         lcd.clear();
-        lcd.setCursor(0,1);
-        lcd.print("dht11 sensor error");
+        lcdPrinter(0,1,"dht11 sensor error");
     }
     
     // mq135 sensor
@@ -73,11 +67,10 @@ void readDisplaySensorData() {
     
     int odor_level = map( round(correctedPPM), 5, 500, 0, 10);
 
-    lcd.setCursor(12,1);
-    lcd.print("O:");
+    lcdPrinter(12,1,"O:");
+
     if (correctedPPM){
-        lcd.setCursor(14,1);
-        lcd.print(odor_level);
+        lcdPrinter(14,1,String(odor_level));
         Blynk.sendInternal("A0", correctedPPM);
     }
     
@@ -90,8 +83,7 @@ void connectToWifiBlynk() {
         if (wifi_connected){
             // nofication
             lcd.clear();
-            lcd.home();
-            lcd.print("WiFi DISCONNECTED!");
+            lcdPrinter(0,0,"WiFi DISCONNECTED!");
             wifi_connected = false;
             blynk_connected = false;
         }
@@ -105,8 +97,7 @@ void connectToWifiBlynk() {
 
     if (!wifi_connected) {
         lcd.clear();
-        lcd.home();
-        lcd.print("WiFi CONNECTED");
+        lcdPrinter(0,0,"WiFi CONNECTED!");
         wifi_connected = true;
     }
 
@@ -141,16 +132,15 @@ void connectToWifiBlynk() {
 
 void topBar() {
 
-    lcd.home();
-    lcd.print("                "); // clear
-    // for wifi
+    lcdPrinter(0,0,"                ");
+
     lcd.setCursor(9,0);
     if(wifi_connected == false) {
         lcd.print("W:0");
     } else {
         lcd.print("W:1");
     }
-    // for blynk
+
     lcd.setCursor(13,0);
     if(blynk_connected == false) {
         lcd.print("B:0");
@@ -170,11 +160,9 @@ void setup() {
     lcd.clear();
     lcd.backlight();
 
-    lcd.setCursor(1,0);
-    lcd.print("Welcome!");
+    lcdPrinter(1,0,"Welcome");
 
-    lcd.setCursor(0,1);
-    lcd.print("PIGGERY MONITOR");
+    lcdPrinter(0,1,"PIGGERY MONITOR");
 
      // Set the ESP8266 to STA mode
     WiFi.mode(WIFI_STA);
