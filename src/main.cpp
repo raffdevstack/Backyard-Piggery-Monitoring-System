@@ -32,6 +32,7 @@ bool blynk_connected = false;
 int temperature = 0;
 int humidity = 0;
 double heat_index_celsius = 0;
+int currentHour = 0;
 
 BlynkTimer timer;
 LiquidCrystal_I2C lcd(0x27, 16, 2);
@@ -51,35 +52,22 @@ void spinner() {
     }
 }
 
-void printLocalTime() {
-
-    timeClient.update();  // Get the current time from the NTP server
-    
+String getLocalTime() {
+    timeClient.update();
     unsigned long epochTime = timeClient.getEpochTime();
-    
-    // Convert epoch time to time_t (cast to the correct type)
     time_t rawTime = (time_t)epochTime;
-
-    // Convert epoch time to human-readable format using localtime_r
+    
     struct tm timeinfo;
     if (localtime_r(&rawTime, &timeinfo) == NULL) {
-        Serial.println("Connection Err");
-        return;
+        return "Error";
     }
 
-    // Format and print the time
-    char timeStr[9];  // To hold the formatted time string (HH:MM:SS)
-    sprintf(timeStr, "%02d:%02d:%02d", timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
+    int localHour = timeinfo.tm_hour % 24;  // Ensures 0-23 range
     
-    Serial.print("Time: ");
-    Serial.println(timeStr);
-
-    // Format and print the date
-    char dateStr[16];  // To hold the formatted date string (DD/MM/YYYY)
-    sprintf(dateStr, "%02d/%02d/%04d", timeinfo.tm_mday, timeinfo.tm_mon + 1, timeinfo.tm_year + 1900);
-    
-    Serial.print("Date: ");
-    Serial.println(dateStr);
+    char timeStr[9];
+    sprintf(timeStr, "%02d:%02d:%02d", localHour, timeinfo.tm_min, timeinfo.tm_sec);
+    return String(timeStr);
+    // This will give you time in 24-hour format (00:00:00 to 23:59:59).
 }
 
 void lcdPrinter(int cursor, int row, String text) {
@@ -88,21 +76,35 @@ void lcdPrinter(int cursor, int row, String text) {
 }
 
 void automateLightAndFan() {
-        // automate fan and light based on heatIndex
-        if (heat_index_celsius > 45) {
-            digitalWrite(RELAY_FAN, LOW); // turn on
-        } else {
-            digitalWrite(RELAY_FAN, HIGH); // turn off
-        }
+    // automate fan and light based on heatIndex
+    if (heat_index_celsius > 45) {
+        digitalWrite(RELAY_FAN, LOW); // turn on
+    } else {
+        digitalWrite(RELAY_FAN, HIGH); // turn off
+    }
 
-        if (heat_index_celsius < 25) {
+    if (heat_index_celsius < 25) {
+        digitalWrite(RELAY_LIGHT, LOW); // turn on
+    } else {
+        digitalWrite(RELAY_LIGHT, HIGH); // turn off
+    }
+
+    // automate light based on time
+    if (wifi_connected){
+        
+        currentHour = getLocalTime().substring(0,2).toInt();
+
+        if (currentHour >= 18)  // Check if hour is 6pm or later
+        {
             digitalWrite(RELAY_LIGHT, LOW); // turn on
         } else {
-            digitalWrite(RELAY_LIGHT, HIGH); // turn off
+             digitalWrite(RELAY_LIGHT, HIGH); // turn oFF
         }
-
-        // automate light based on time
-        
+    } else {
+        digitalWrite(RELAY_LIGHT, HIGH); // turn oFF
+    }
+    
+    
 }
 
 double calculateHeatIndexCelsius(double temperatureC, double humidity) {
@@ -176,7 +178,7 @@ void readDisplaySensorData() {
     // float ppm = mq135_sensor.getPPM();
     float correctedPPM = mq135_sensor.getCorrectedPPM(temperature, humidity);
     
-    int odor_level = map( round(correctedPPM), 5, 500, 0, 10);
+    int odor_level = map( round(correctedPPM), 5, 200, 0, 10);
 
     lcdPrinter(12,1,"O:");
 
