@@ -34,6 +34,10 @@ void lcdPrinter(int cursor, int row, String text) {
     lcd.print(text);
 }
 
+void automateLight() {
+    
+}
+
 double calculateHeatIndexCelsius(double temperatureC, double humidity) {
     // Ensure inputs are valid
     if (temperatureC < 0 || humidity < 0 || humidity > 100) {
@@ -95,15 +99,15 @@ void readDisplaySensorData() {
 
         // automate fan and light based on heatIndex
         if (heat_index_celsius > 45) {
-            digitalWrite(RELAY_FAN, HIGH);
+            digitalWrite(RELAY_FAN, LOW); // turn on
         } else {
-            digitalWrite(RELAY_FAN, LOW);
+            digitalWrite(RELAY_FAN, HIGH); // turn off
         }
 
         if (heat_index_celsius < 25) {
-            digitalWrite(RELAY_LIGHT, HIGH);
+            digitalWrite(RELAY_LIGHT, LOW); // turn on
         } else {
-            digitalWrite(RELAY_LIGHT, LOW);
+            digitalWrite(RELAY_LIGHT, HIGH); // turn off
         }
         
     } else {
@@ -212,8 +216,8 @@ void setup() {
     pinMode(RELAY_LIGHT, OUTPUT);  // Set GPIO14 as output
     pinMode(RELAY_FAN, OUTPUT);    // Set GPIO13 as output
     // Start with relays off
-    digitalWrite(RELAY_LIGHT, LOW);  
-    digitalWrite(RELAY_FAN, LOW);
+    digitalWrite(RELAY_LIGHT, HIGH);  // Start with the relay OFF for my ACTIVE LOW RELAY
+    digitalWrite(RELAY_FAN, HIGH); // Start with the relay OFF for my ACTIVE LOW RELAY
 
     lcd.init();
     lcd.clear();
