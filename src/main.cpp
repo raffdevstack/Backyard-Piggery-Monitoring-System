@@ -4,6 +4,8 @@
 #define BLYNK_AUTH_TOKEN "9m5XLGdZ6dQTm8fXzHY88WwK9jQ1NfwC"
 
 #define BLYNK_PRINT Serial
+#define RELAY_LIGHT 14  // D5 (GPIO14) for Light
+#define RELAY_FAN 13    // D7 (GPIO13) for Fan
 
 #include <Arduino.h>
 #include <DHT11.h>
@@ -90,6 +92,13 @@ void readDisplaySensorData() {
 
         double heat_index =  calculateHeatIndexCelsius(temperature, humidity);
         Blynk.virtualWrite(V2, heat_index);
+
+        // automate fans
+        if (heat_index > 45)
+        {
+            /* code */
+        }
+        
 
     } else {
         lcd.clear();
@@ -193,6 +202,12 @@ void setup() {
     
     Serial.begin(115200);
     delay(10);
+
+    pinMode(RELAY_LIGHT, OUTPUT);  // Set GPIO14 as output
+    pinMode(RELAY_FAN, OUTPUT);    // Set GPIO13 as output
+    // Start with relays off
+    digitalWrite(RELAY_LIGHT, LOW);  
+    digitalWrite(RELAY_FAN, LOW);
 
     lcd.init();
     lcd.clear();
