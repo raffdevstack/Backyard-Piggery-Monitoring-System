@@ -172,10 +172,10 @@ void readDisplaySensorData() {
     }
     
     // mq135 sensor
-    // float rzero = mq135_sensor.getRZero();
-    // float correctedRZero = mq135_sensor.getCorrectedRZero(temperature, humidity);
-    // float resistance = mq135_sensor.getResistance();
-    // float ppm = mq135_sensor.getPPM();
+    float rzero = mq135_sensor.getRZero();
+    float correctedRZero = mq135_sensor.getCorrectedRZero(temperature, humidity);
+    float resistance = mq135_sensor.getResistance();
+    float ppm = mq135_sensor.getPPM();
     float correctedPPM = mq135_sensor.getCorrectedPPM(temperature, humidity);
 
     lcdPrinter(12,1,"o:");
