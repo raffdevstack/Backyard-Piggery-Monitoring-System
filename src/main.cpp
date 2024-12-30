@@ -51,6 +51,7 @@ void spinner() {
 }
 
 void printLocalTime() {
+
     timeClient.update();  // Get the current time from the NTP server
     
     unsigned long epochTime = timeClient.getEpochTime();
@@ -207,6 +208,8 @@ void connectToWifiBlynk() {
         lcd.clear();
         lcdPrinter(0,0,"WiFi CONNECTED!");
         wifi_connected = true;
+
+        timeClient.begin();
     }
 
     // code for connected wifi
@@ -263,8 +266,6 @@ void setup() {
     
     Serial.begin(115200);
     delay(10);
-
-    timeClient.begin();
 
     pinMode(RELAY_LIGHT, OUTPUT);  // Set GPIO14 as output
     pinMode(RELAY_FAN, OUTPUT);    // Set GPIO13 as output
