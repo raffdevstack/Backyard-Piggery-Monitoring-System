@@ -96,7 +96,9 @@ void readDisplaySensorData() {
         // automate fans
         if (heat_index > 45)
         {
-            /* code */
+            digitalWrite(RELAY_FAN, HIGH);
+        } else {
+            digitalWrite(RELAY_FAN, LOW);
         }
         
 
