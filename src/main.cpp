@@ -20,6 +20,7 @@
 #include <LiquidCrystal_I2C.h>
 #include <Wire.h> // better lcd communication
 #include <NTPClient.h>
+#include <WiFiUdp.h>
 
 const char* ssid = "Hotspot_ko";
 const char* pass = "abcdefghij";
@@ -35,6 +36,8 @@ BlynkTimer timer;
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 DHT11 dht(D6);
 MQ135 mq135_sensor(A0);
+WiFiUDP udp;
+NTPClient timeClient(udp, NTP_SERVER, UTC_OFFSET, 60000);  // Update every 60 seconds
 
 // for later use
 void spinner() {
@@ -48,10 +51,17 @@ void spinner() {
 }
 
 void printLocalTime() {
+    timeClient.update();  // Get the current time from the NTP server
+    
+    unsigned long epochTime = timeClient.getEpochTime();
+    
+    // Convert epoch time to time_t (cast to the correct type)
+    time_t rawTime = (time_t)epochTime;
+
+    // Convert epoch time to human-readable format using localtime_r
     struct tm timeinfo;
-    if (!getLocalTime(&timeinfo)) {
-        lcd.setCursor(0, 1);
-        lcd.print("Connection Err");
+    if (localtime_r(&rawTime, &timeinfo) == NULL) {
+        Serial.println("Connection Err");
         return;
     }
 
@@ -59,16 +69,15 @@ void printLocalTime() {
     char timeStr[9];  // To hold the formatted time string (HH:MM:SS)
     sprintf(timeStr, "%02d:%02d:%02d", timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
     
-    lcd.setCursor(8, 0);
-    lcd.print(timeStr);
+    Serial.print("Time: ");
+    Serial.println(timeStr);
 
     // Format and print the date
     char dateStr[16];  // To hold the formatted date string (DD/MM/YYYY)
     sprintf(dateStr, "%02d/%02d/%04d", timeinfo.tm_mday, timeinfo.tm_mon + 1, timeinfo.tm_year + 1900);
     
-    lcd.setCursor(0, 1);
-    lcd.print(dateStr);
-    lcd.print("   ");
+    Serial.print("Date: ");
+    Serial.println(dateStr);
 }
 
 void lcdPrinter(int cursor, int row, String text) {
@@ -255,7 +264,7 @@ void setup() {
     Serial.begin(115200);
     delay(10);
 
-    configTime(UTC_OFFSET, UTC_OFFSET_DST, NTP_SERVER);
+    timeClient.begin();
 
     pinMode(RELAY_LIGHT, OUTPUT);  // Set GPIO14 as output
     pinMode(RELAY_FAN, OUTPUT);    // Set GPIO13 as output
