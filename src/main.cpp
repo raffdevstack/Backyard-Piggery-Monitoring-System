@@ -90,18 +90,22 @@ void readDisplaySensorData() {
         lcdPrinter(8,1,String(humidity));
         Blynk.virtualWrite(V1, humidity);
 
-        double heat_index =  calculateHeatIndexCelsius(temperature, humidity);
-        Blynk.virtualWrite(V2, heat_index);
+        double heat_index_celsius =  calculateHeatIndexCelsius(temperature, humidity);
+        Blynk.virtualWrite(V2, heat_index_celsius);
 
-        // automate fans
-        if (heat_index > 45)
-        {
+        // automate fan and light based on heatIndex
+        if (heat_index_celsius > 45) {
             digitalWrite(RELAY_FAN, HIGH);
         } else {
             digitalWrite(RELAY_FAN, LOW);
         }
-        
 
+        if (heat_index_celsius < 25) {
+            digitalWrite(RELAY_LIGHT, HIGH);
+        } else {
+            digitalWrite(RELAY_LIGHT, LOW);
+        }
+        
     } else {
         lcd.clear();
         lcdPrinter(0,1,"dht11 sensor error");
