@@ -7,12 +7,19 @@
 #define RELAY_LIGHT 14  // D5 (GPIO14) for Light
 #define RELAY_FAN 13    // D7 (GPIO13) for Fan
 
+// for time
+#define NTP_SERVER     "pool.ntp.org"
+#define UTC_OFFSET     8 * 3600
+#define UTC_OFFSET_DST 0 0
+
 #include <Arduino.h>
 #include <DHT11.h>
 #include <MQ135.h>
 #include <ESP8266WiFi.h>
 #include <BlynkSimpleEsp8266.h>
 #include <LiquidCrystal_I2C.h>
+#include <Wire.h> // better lcd communication
+#include <NTPClient.h>
 
 const char* ssid = "Hotspot_ko";
 const char* pass = "abcdefghij";
@@ -28,6 +35,41 @@ BlynkTimer timer;
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 DHT11 dht(D6);
 MQ135 mq135_sensor(A0);
+
+// for later use
+void spinner() {
+    static int8_t counter = 0;
+    const char* glyphs = "\xa1\xa5\xdb";
+    lcd.setCursor(15, 1);
+    lcd.print(glyphs[counter++]);
+    if (counter == strlen(glyphs)) {
+        counter = 0;
+    }
+}
+
+void printLocalTime() {
+    struct tm timeinfo;
+    if (!getLocalTime(&timeinfo)) {
+        lcd.setCursor(0, 1);
+        lcd.print("Connection Err");
+        return;
+    }
+
+    // Format and print the time
+    char timeStr[9];  // To hold the formatted time string (HH:MM:SS)
+    sprintf(timeStr, "%02d:%02d:%02d", timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
+    
+    lcd.setCursor(8, 0);
+    lcd.print(timeStr);
+
+    // Format and print the date
+    char dateStr[16];  // To hold the formatted date string (DD/MM/YYYY)
+    sprintf(dateStr, "%02d/%02d/%04d", timeinfo.tm_mday, timeinfo.tm_mon + 1, timeinfo.tm_year + 1900);
+    
+    lcd.setCursor(0, 1);
+    lcd.print(dateStr);
+    lcd.print("   ");
+}
 
 void lcdPrinter(int cursor, int row, String text) {
     lcd.setCursor(cursor, row); // Assuming you want to set the cursor to a specific column on row 0
@@ -212,6 +254,8 @@ void setup() {
     
     Serial.begin(115200);
     delay(10);
+
+    configTime(UTC_OFFSET, UTC_OFFSET_DST, NTP_SERVER);
 
     pinMode(RELAY_LIGHT, OUTPUT);  // Set GPIO14 as output
     pinMode(RELAY_FAN, OUTPUT);    // Set GPIO13 as output
