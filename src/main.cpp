@@ -31,6 +31,7 @@ bool wifi_connected = false;
 bool blynk_connected = false;
 int temperature = 0;
 int humidity = 0;
+double heat_index_celsius = 0;
 
 BlynkTimer timer;
 LiquidCrystal_I2C lcd(0x27, 16, 2);
@@ -86,8 +87,22 @@ void lcdPrinter(int cursor, int row, String text) {
     lcd.print(text);
 }
 
-void automateLight() {
-    
+void automateLightAndFan() {
+        // automate fan and light based on heatIndex
+        if (heat_index_celsius > 45) {
+            digitalWrite(RELAY_FAN, LOW); // turn on
+        } else {
+            digitalWrite(RELAY_FAN, HIGH); // turn off
+        }
+
+        if (heat_index_celsius < 25) {
+            digitalWrite(RELAY_LIGHT, LOW); // turn on
+        } else {
+            digitalWrite(RELAY_LIGHT, HIGH); // turn off
+        }
+
+        // automate light based on time
+        
 }
 
 double calculateHeatIndexCelsius(double temperatureC, double humidity) {
@@ -146,21 +161,8 @@ void readDisplaySensorData() {
         lcdPrinter(8,1,String(humidity));
         Blynk.virtualWrite(V1, humidity);
 
-        double heat_index_celsius =  calculateHeatIndexCelsius(temperature, humidity);
+        heat_index_celsius =  calculateHeatIndexCelsius(temperature, humidity);
         Blynk.virtualWrite(V2, heat_index_celsius);
-
-        // automate fan and light based on heatIndex
-        if (heat_index_celsius > 45) {
-            digitalWrite(RELAY_FAN, LOW); // turn on
-        } else {
-            digitalWrite(RELAY_FAN, HIGH); // turn off
-        }
-
-        if (heat_index_celsius < 25) {
-            digitalWrite(RELAY_LIGHT, LOW); // turn on
-        } else {
-            digitalWrite(RELAY_LIGHT, HIGH); // turn off
-        }
         
     } else {
         lcd.clear();
@@ -291,6 +293,7 @@ void setup() {
     timer.setInterval(5000L, connectToWifiBlynk);
     timer.setInterval(5000L, readDisplaySensorData);
     timer.setInterval(5000L, topBar);
+    timer.setInterval(5000L, automateLightAndFan);
 }
 
 void loop()
