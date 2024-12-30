@@ -177,14 +177,12 @@ void readDisplaySensorData() {
     // float resistance = mq135_sensor.getResistance();
     // float ppm = mq135_sensor.getPPM();
     float correctedPPM = mq135_sensor.getCorrectedPPM(temperature, humidity);
-    
-    int odor_level = map( round(correctedPPM), 5, 200, 0, 10);
 
-    lcdPrinter(12,1,"O:");
-
-    if (correctedPPM){
-        lcdPrinter(14,1,String(odor_level));
-        Blynk.sendInternal("A0", correctedPPM);
+    lcdPrinter(12,1,"o:");
+    if (correctedPPM > 0) {  // Check for valid reading
+        
+        Blynk.virtualWrite(V4, correctedPPM); // will use this from now on
+        Serial.println(correctedPPM);
     }
     
 }
@@ -265,7 +263,6 @@ void topBar() {
 
 }
     
-
 void setup() {
     
     Serial.begin(115200);
