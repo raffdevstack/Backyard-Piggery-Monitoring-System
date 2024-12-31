@@ -107,10 +107,10 @@ void readDisplaySensorData() {
 
     lcdPrinter(0,1,"                ");
 
-    lcdPrinter(0,1,"T:");
+    lcdPrinter(0,1,"t:");
     lcdPrinter(4,1,"C");
 
-    lcdPrinter(6,1,"H:");
+    lcdPrinter(6,1,"h:");
     lcdPrinter(10,1,"%");
 
     if (result == 0) {
@@ -130,17 +130,17 @@ void readDisplaySensorData() {
     }
     
     // mq135 sensor
-    float rzero = mq135_sensor.getRZero();
-    float correctedRZero = mq135_sensor.getCorrectedRZero(temperature, humidity);
-    float resistance = mq135_sensor.getResistance();
-    float ppm = mq135_sensor.getPPM();
+    mq135_sensor.getRZero();
+    mq135_sensor.getCorrectedRZero(temperature, humidity);
+    mq135_sensor.getResistance();
+    mq135_sensor.getPPM();
     float correctedPPM = mq135_sensor.getCorrectedPPM(temperature, humidity);
 
     lcdPrinter(12,1,"o:");
     if (correctedPPM > 0) {  // Check for valid reading
-        
         Blynk.virtualWrite(V4, correctedPPM); // will use this from now on
-        Serial.println(correctedPPM);
+        int intCorrectePPM = round(correctedPPM);
+        lcdPrinter(14,1, String(intCorrectePPM));
     }
     
 }
@@ -245,10 +245,11 @@ void setup() {
     // blynk init
     Blynk.config(BLYNK_AUTH_TOKEN);
 
-    timer.setInterval(5000L, connectToWifiBlynk);
     timer.setInterval(5000L, readDisplaySensorData);
-    timer.setInterval(5000L, topBar);
-    timer.setInterval(5000L, automateLightAndFan);
+    timer.setInterval(5100L, connectToWifiBlynk);
+    timer.setInterval(5200L, topBar);
+    timer.setInterval(5300L, automateLightAndFan);
+
 }
 
 void loop()
