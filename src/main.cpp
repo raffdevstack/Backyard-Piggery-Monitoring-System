@@ -6,6 +6,8 @@
 #define BLYNK_PRINT Serial
 #define RELAY_LIGHT 14  // D5 (GPIO14) for Light
 #define RELAY_FAN 13    // D7 (GPIO13) for Fan
+#define DHT11_PIN 4    // D2 (GPIO4) for Fan
+#define BUZZER 0    // D3 (GPIO0) for Fan
 
 #include <Arduino.h>
 #include <DHT11.h>
@@ -28,7 +30,7 @@ double heat_index_celsius = 0;
 
 BlynkTimer timer;
 LiquidCrystal_I2C lcd(0x27, 16, 2);
-DHT11 dht(D6);
+DHT11 dht(DHT11_PIN);
 MQ135 mq135_sensor(A0);
 
 // for later use
@@ -142,6 +144,13 @@ void readDisplaySensorData() {
         int intCorrectePPM = round(correctedPPM);
         lcdPrinter(14,1, String(intCorrectePPM));
     }
+
+    // alarm for odor
+    if (correctedPPM > 15) {
+        digitalWrite(BUZZER, HIGH);
+    } else {
+        digitalWrite(BUZZER, LOW);
+    }
     
 }
 
@@ -226,9 +235,13 @@ void setup() {
 
     pinMode(RELAY_LIGHT, OUTPUT);  // Set GPIO14 as output
     pinMode(RELAY_FAN, OUTPUT);    // Set GPIO13 as output
-    // Start with relays off
+    pinMode(BUZZER, OUTPUT);    // Set GPIO13 as output
+
+    // Start with relays AND buzzer off
     digitalWrite(RELAY_LIGHT, HIGH);  // Start with the relay OFF for my ACTIVE LOW RELAY
     digitalWrite(RELAY_FAN, HIGH); // Start with the relay OFF for my ACTIVE LOW RELAY
+    digitalWrite(BUZZER, LOW);
+
 
     lcd.init();
     lcd.clear();
