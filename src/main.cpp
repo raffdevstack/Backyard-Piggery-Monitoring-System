@@ -7,7 +7,7 @@
 #define RELAY_LIGHT 14  // D5 (GPIO14) for Light
 #define RELAY_FAN 13    // D7 (GPIO13) for Fan
 #define DHT11_PIN 4    // D2 (GPIO4) for Fan
-#define BUZZER 0    // D3 (GPIO0) for Fan
+#define BUZZER 2    // D4 (GPIO2) for Fan
 
 #include <Arduino.h>
 #include <DHT11.h>
