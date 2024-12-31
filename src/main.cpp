@@ -8,9 +8,9 @@
 #define RELAY_FAN 13    // D7 (GPIO13) for Fan
 
 // for time
-#define NTP_SERVER     "pool.ntp.org"
-#define UTC_OFFSET     8 * 3600
-#define UTC_OFFSET_DST 0 0
+// #define NTP_SERVER     "pool.ntp.org"
+// #define UTC_OFFSET     8 * 3600
+// #define UTC_OFFSET_DST 0 0
 
 #include <Arduino.h>
 #include <DHT11.h>
@@ -19,8 +19,8 @@
 #include <BlynkSimpleEsp8266.h>
 #include <LiquidCrystal_I2C.h>
 #include <Wire.h> // better lcd communication
-#include <NTPClient.h>
-#include <WiFiUdp.h>
+// #include <NTPClient.h>
+// #include <WiFiUdp.h>
 
 const char* ssid = "Hotspot_ko";
 const char* pass = "abcdefghij";
@@ -32,14 +32,14 @@ bool blynk_connected = false;
 int temperature = 0;
 int humidity = 0;
 double heat_index_celsius = 0;
-int currentHour = 0;
+// int currentHour = 0;
 
 BlynkTimer timer;
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 DHT11 dht(D6);
 MQ135 mq135_sensor(A0);
-WiFiUDP udp;
-NTPClient timeClient(udp, NTP_SERVER, UTC_OFFSET, 60000);  // Update every 60 seconds
+// WiFiUDP udp;
+// NTPClient timeClient(udp, NTP_SERVER, UTC_OFFSET, 60000);  // Update every 60 seconds
 
 // for later use
 void spinner() {
@@ -52,23 +52,23 @@ void spinner() {
     }
 }
 
-String getLocalTime() {
-    timeClient.update();
-    unsigned long epochTime = timeClient.getEpochTime();
-    time_t rawTime = (time_t)epochTime;
+// String getLocalTime() {
+//     timeClient.update();
+//     unsigned long epochTime = timeClient.getEpochTime();
+//     time_t rawTime = (time_t)epochTime;
     
-    struct tm timeinfo;
-    if (localtime_r(&rawTime, &timeinfo) == NULL) {
-        return "Error";
-    }
+//     struct tm timeinfo;
+//     if (localtime_r(&rawTime, &timeinfo) == NULL) {
+//         return "Error";
+//     }
 
-    int localHour = timeinfo.tm_hour % 24;  // Ensures 0-23 range
+//     int localHour = timeinfo.tm_hour % 24;  // Ensures 0-23 range
     
-    char timeStr[9];
-    sprintf(timeStr, "%02d:%02d:%02d", localHour, timeinfo.tm_min, timeinfo.tm_sec);
-    return String(timeStr);
-    // This will give you time in 24-hour format (00:00:00 to 23:59:59).
-}
+//     char timeStr[9];
+//     sprintf(timeStr, "%02d:%02d:%02d", localHour, timeinfo.tm_min, timeinfo.tm_sec);
+//     return String(timeStr);
+//     // This will give you time in 24-hour format (00:00:00 to 23:59:59).
+// }
 
 void lcdPrinter(int cursor, int row, String text) {
     lcd.setCursor(cursor, row); // Assuming you want to set the cursor to a specific column on row 0
@@ -89,21 +89,7 @@ void automateLightAndFan() {
         digitalWrite(RELAY_LIGHT, HIGH); // turn off
     }
 
-    // automate light based on time
-    if (wifi_connected){
-        
-        currentHour = getLocalTime().substring(0,2).toInt();
-
-        if (currentHour >= 18)  // Check if hour is 6pm or later
-        {
-            digitalWrite(RELAY_LIGHT, LOW); // turn on
-        } else {
-             digitalWrite(RELAY_LIGHT, HIGH); // turn oFF
-        }
-    } else {
-        digitalWrite(RELAY_LIGHT, HIGH); // turn oFF
-    }
-    
+    // automate light bulb based on light sensor
     
 }
 
@@ -210,8 +196,6 @@ void connectToWifiBlynk() {
         lcd.clear();
         lcdPrinter(0,0,"WiFi CONNECTED!");
         wifi_connected = true;
-
-        timeClient.begin();
     }
 
     // code for connected wifi
